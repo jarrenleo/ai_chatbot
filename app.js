@@ -18,7 +18,7 @@ const openai = new OpenAIApi(
 let previousMessage = [];
 
 telegram.on(message("text"), async (context) => {
-  if (previousMessage.length > 6) previousMessage.shift();
+  if (previousMessage.length > 6) previousMessage.slice(-6);
 
   const content = context.update.message.text.slice(1);
 
