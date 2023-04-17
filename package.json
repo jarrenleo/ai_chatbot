@@ -1,0 +1,17 @@
+{
+  "name": "telegram",
+  "version": "1.0.0",
+  "description": "Telegram bot that interacts with OpenAI API",
+  "main": "app.js",
+  "type": "module",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "author": "jarrenleo",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^16.0.3",
+    "openai": "^3.2.1",
+    "telegraf": "^4.12.2"
+  }
+}
