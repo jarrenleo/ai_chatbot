@@ -18,18 +18,22 @@ const openai = new OpenAIApi(
 let previousMessage = [];
 
 telegram.on(message("text"), async (context) => {
-  if (previousMessage.length > 6) previousMessage.slice(-6);
+  if (previousMessage.length > 10) previousMessage = previousMessage.slice(-10);
 
-  const content = context.update.message.text.slice(1);
+  const text = context.update.message.text;
+  const name = context.update.message.from.username;
+  const previousConversation = previousMessage.length
+    ? `Context on Previous Conversation:\n${previousMessage.join("\n")}\n\n`
+    : "";
+  const content = `${previousConversation}Prompt: ${text}`;
 
   const completion = await openai.createChatCompletion({
     model: "gpt-3.5-turbo",
     messages: [
       {
         role: "user",
-        content: `Previous Conversation for Context: ${previousMessage.join(
-          "\n"
-        )}\nCurrent Prompt: ${content}`,
+        content: content,
+        name: name,
       },
     ],
   });
@@ -37,6 +41,6 @@ telegram.on(message("text"), async (context) => {
 
   context.reply(response);
 
-  previousMessage.push(`User: ${content}`);
-  previousMessage.push(`Me: ${response}`);
+  previousMessage.push(`User: ${text}`);
+  previousMessage.push(`GPT: ${response}`);
 });
