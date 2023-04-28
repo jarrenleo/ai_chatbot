@@ -1,5 +1,5 @@
 {
-  "name": "telegram",
+  "name": "chatgpt",
   "version": "1.0.0",
   "description": "Chat bots that interacts with the OpenAI API",
   "main": "app.js",
