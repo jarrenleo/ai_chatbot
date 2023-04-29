@@ -8,36 +8,63 @@ export class Discord extends OpenAI {
 
   constructor() {
     super();
-    this.discord = this.init();
-    this.discord.login(process.env.DISCORD_TOKEN);
+    this.discord = this.initDiscord();
     this.handleMessage();
   }
 
-  init() {
-    return new Client({
+  initDiscord() {
+    const client = new Client({
       intents: [
         GatewayIntentBits.Guilds,
         GatewayIntentBits.GuildMessages,
         GatewayIntentBits.MessageContent,
       ],
     });
+    client.login(process.env.DISCORD_TOKEN);
+
+    return client;
+  }
+
+  checkMessage(m) {
+    if (this.previousMessage.length > 1) this.previousMessage.shift();
+
+    return m.content.startsWith("!q");
+  }
+
+  trimMessage(m) {
+    return m.content.trimStart().slice(2).trimStart();
+  }
+
+  async getGPTCompletion(m) {
+    return await this.getChatCompletion(
+      this.previousMessage[0],
+      this.trimMessage(m)
+    );
+  }
+
+  async sendAndUpdateMessage(m) {
+    const response = await this.getGPTCompletion(m);
+    m.reply({
+      content: response,
+    });
+    this.previousMessage.push(response);
+  }
+
+  async checkAndhandleRepliedMessage(m) {
+    if (m.mentions.repliedUser) {
+      const messageRef = await m.channel.messages.fetch(m.reference.messageId);
+
+      this.previousMessage.shift();
+      this.previousMessage.push(messageRef.content);
+    }
   }
 
   handleMessage() {
     this.discord.on(Events.MessageCreate, async (m) => {
-      if (!m.content.startsWith("!q")) return;
-      if (this.previousMessage.length > 1) this.previousMessage.shift();
+      if (!this.checkMessage(m)) return;
 
-      const currentMessage = m.content.trimStart().slice(2).trimStart();
-      const response = await this.getChatCompletion(
-        this.previousMessage[0],
-        currentMessage
-      );
-
-      m.reply({
-        content: response,
-      });
-      this.previousMessage.push(response);
+      await this.checkAndhandleRepliedMessage(m);
+      this.sendAndUpdateMessage(m);
     });
   }
 }

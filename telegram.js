@@ -9,27 +9,49 @@ export class Telegram extends OpenAI {
 
   constructor() {
     super();
-    this.telegram = this.init();
-    this.telegram.launch();
+    this.telegram = this.initTelegram();
     this.handleMessage();
   }
 
-  init() {
-    return new Telegraf(process.env.TELEGRAM_TOKEN);
+  initTelegram() {
+    const client = new Telegraf(process.env.TELEGRAM_TOKEN);
+    client.launch();
+
+    return client;
+  }
+
+  checkMessage(message) {
+    if (this.previousMessage.length > 1) this.previousMessage.shift();
+    if (message.reply_to_message) {
+      this.previousMessage.shift();
+      this.previousMessage.push(message.reply_to_message.text);
+    }
+  }
+
+  getCurrentMessage(message) {
+    return message.text.startsWith("/")
+      ? message.text.slice(1).trimStart()
+      : message.text;
+  }
+
+  async getGPTCompletion(message) {
+    return await this.getChatCompletion(
+      this.previousMessage[0],
+      this.getCurrentMessage(message)
+    );
+  }
+
+  async sendAndUpdateMessage(c, message) {
+    const response = await this.getGPTCompletion(message);
+    c.reply(response);
+    this.previousMessage.push(response);
   }
 
   handleMessage() {
-    this.telegram.on(message("text"), async (context) => {
-      if (this.previousMessage.length > 1) this.previousMessage.shift();
-
-      const currentMessage = context.update.message.text;
-      const response = await this.getChatCompletion(
-        this.previousMessage[0],
-        currentMessage
-      );
-
-      context.reply(response);
-      this.previousMessage.push(response);
+    this.telegram.on(message("text"), async (c) => {
+      const message = c.update.message;
+      this.checkMessage(message);
+      this.sendAndUpdateMessage(c, message);
     });
   }
 }

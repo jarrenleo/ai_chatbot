@@ -4,10 +4,10 @@ config();
 
 export class OpenAI {
   constructor() {
-    this.openai = this.initOpenAIApi();
+    this.openai = this.initOpenAI();
   }
 
-  initOpenAIApi() {
+  initOpenAI() {
     return new OpenAIApi(
       new Configuration({
         organization: process.env.OPENAI_ORGANISATION_ID,

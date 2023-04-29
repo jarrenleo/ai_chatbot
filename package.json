@@ -1,6 +1,6 @@
 {
   "name": "chatgpt",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Chat bots that interacts with the OpenAI API",
   "main": "app.js",
   "type": "module",
