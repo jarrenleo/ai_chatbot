@@ -30,7 +30,7 @@ export class Discord extends OpenAI {
     return m.content.startsWith("!q");
   }
 
-  checkMessage() {
+  checkPreviousMessage() {
     if (this.previousMessage.length > 1) this.previousMessage.shift();
   }
 
@@ -59,6 +59,15 @@ export class Discord extends OpenAI {
     return messages;
   }
 
+  async handleMentionedMessage(m) {
+    if (m.mentions.repliedUser) {
+      const messageRef = await m.channel.messages.fetch(m.reference.messageId);
+
+      this.previousMessage.shift();
+      this.previousMessage.push(messageRef.content);
+    }
+  }
+
   async getGPTCompletion(m) {
     return await this.getChatCompletion(
       this.previousMessage[0],
@@ -66,7 +75,7 @@ export class Discord extends OpenAI {
     );
   }
 
-  async sendAndUpdateMessage(m) {
+  async sendMessage(m) {
     const response = await this.getGPTCompletion(m);
     this.previousMessage.push(response);
 
@@ -85,22 +94,13 @@ export class Discord extends OpenAI {
     }
   }
 
-  async checkAndhandleRepliedMessage(m) {
-    if (m.mentions.repliedUser) {
-      const messageRef = await m.channel.messages.fetch(m.reference.messageId);
-
-      this.previousMessage.shift();
-      this.previousMessage.push(messageRef.content);
-    }
-  }
-
   handleMessage() {
     this.discord.on(Events.MessageCreate, async (m) => {
       if (!this.checkCommand(m)) return;
 
-      this.checkMessage();
-      await this.checkAndhandleRepliedMessage(m);
-      this.sendAndUpdateMessage(m);
+      this.checkPreviousMessage();
+      await this.handleMentionedMessage(m);
+      this.sendMessage(m);
     });
   }
 }

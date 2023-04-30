@@ -20,38 +20,41 @@ export class Telegram extends OpenAI {
     return client;
   }
 
-  checkMessage(message) {
+  checkPreviousMessage() {
     if (this.previousMessage.length > 1) this.previousMessage.shift();
-    if (message.reply_to_message) {
+  }
+
+  trimMessage(m) {
+    return m.text.startsWith("/") ? m.text.slice(1).trimStart() : m.text;
+  }
+
+  handleMentionedMessage(m) {
+    if (m.reply_to_message) {
       this.previousMessage.shift();
-      this.previousMessage.push(message.reply_to_message.text);
+      this.previousMessage.push(m.reply_to_message.text);
     }
   }
 
-  getCurrentMessage(message) {
-    return message.text.startsWith("/")
-      ? message.text.slice(1).trimStart()
-      : message.text;
-  }
-
-  async getGPTCompletion(message) {
+  async getGPTCompletion(m) {
     return await this.getChatCompletion(
       this.previousMessage[0],
-      this.getCurrentMessage(message)
+      this.trimMessage(m)
     );
   }
 
-  async sendAndUpdateMessage(c, message) {
-    const response = await this.getGPTCompletion(message);
-    c.reply(response);
+  async sendMessage(c, m) {
+    const response = await this.getGPTCompletion(m);
     this.previousMessage.push(response);
+    c.reply(response);
   }
 
   handleMessage() {
     this.telegram.on(message("text"), async (c) => {
-      const message = c.update.message;
-      this.checkMessage(message);
-      this.sendAndUpdateMessage(c, message);
+      const m = c.update.message;
+
+      this.checkPreviousMessage(m);
+      this.handleMentionedMessage(m);
+      this.sendMessage(c, m);
     });
   }
 }
