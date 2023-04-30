@@ -5,6 +5,7 @@ config();
 
 export class Discord extends OpenAI {
   previousMessage = [];
+  characterLimit = 2000;
 
   constructor() {
     super();
@@ -25,14 +26,37 @@ export class Discord extends OpenAI {
     return client;
   }
 
-  checkMessage(m) {
-    if (this.previousMessage.length > 1) this.previousMessage.shift();
-
+  checkCommand(m) {
     return m.content.startsWith("!q");
+  }
+
+  checkMessage() {
+    if (this.previousMessage.length > 1) this.previousMessage.shift();
   }
 
   trimMessage(m) {
     return m.content.trimStart().slice(2).trimStart();
+  }
+
+  splitMessage(response) {
+    let messages = [],
+      charCount = 0;
+    const splitCount = Math.ceil(response.length / (this.characterLimit - 100));
+
+    for (let i = 1; i <= splitCount; ++i) {
+      if (i < splitCount) {
+        const message = response.slice(
+          charCount,
+          charCount + this.characterLimit
+        );
+        const firstSpacingIndex = message.lastIndexOf(" ");
+
+        messages.push(response.slice(charCount, charCount + firstSpacingIndex));
+        charCount += firstSpacingIndex;
+      } else messages.push(response.slice(charCount));
+    }
+
+    return messages;
   }
 
   async getGPTCompletion(m) {
@@ -44,10 +68,21 @@ export class Discord extends OpenAI {
 
   async sendAndUpdateMessage(m) {
     const response = await this.getGPTCompletion(m);
-    m.reply({
-      content: response,
-    });
     this.previousMessage.push(response);
+
+    if (response.length <= this.characterLimit) {
+      m.reply({
+        content: response,
+      });
+      return;
+    }
+
+    const messages = this.splitMessage(response);
+    for (const message of messages) {
+      m.reply({
+        content: message,
+      });
+    }
   }
 
   async checkAndhandleRepliedMessage(m) {
@@ -61,8 +96,9 @@ export class Discord extends OpenAI {
 
   handleMessage() {
     this.discord.on(Events.MessageCreate, async (m) => {
-      if (!this.checkMessage(m)) return;
+      if (!this.checkCommand(m)) return;
 
+      this.checkMessage();
       await this.checkAndhandleRepliedMessage(m);
       this.sendAndUpdateMessage(m);
     });
