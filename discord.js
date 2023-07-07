@@ -33,7 +33,7 @@ export class Discord extends OpenAI {
   // If it does, the command is extracted for model selection
   getCommand(m) {
     const command = m.content.trimStart().slice(0, 2);
-    if (!command.startsWith("!q") && !command.startsWith("!4")) return false;
+    if (command !== "!q" && command !== "!4") return false;
 
     return command;
   }
