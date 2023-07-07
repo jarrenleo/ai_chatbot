@@ -101,7 +101,7 @@ export class Discord extends OpenAI {
   }
 
   // Update the previousMessage array and send ChatGPT response back to the user
-  async sendMessage(m, messages) {
+  async sendMessage(m, response, messages) {
     this.previousMessage.push(response);
 
     for (const message of messages) {
@@ -123,7 +123,7 @@ export class Discord extends OpenAI {
       const model = this.modelSelection(command);
       const response = await this.getGPTCompletion(prompt, model);
       const messages = this.checkResponse(response);
-      this.sendMessage(m, messages);
+      this.sendMessage(m, response, messages);
     });
   }
 }
