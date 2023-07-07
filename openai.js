@@ -16,10 +16,10 @@ export class OpenAI {
     );
   }
 
-  async getChatCompletion(previousContent = "", currentContent) {
+  async getChatCompletion(previousContent = "", currentContent, model) {
     try {
       const completion = await this.openai.createChatCompletion({
-        model: "gpt-3.5-turbo",
+        model: model,
         messages: [
           {
             role: "assistant",

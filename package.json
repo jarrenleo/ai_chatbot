@@ -1,7 +1,7 @@
 {
   "name": "chatgpt",
-  "version": "1.0.3",
-  "description": "Chat bots that interacts with the OpenAI API",
+  "version": "1.0.4",
+  "description": "ChatGPT on Discord and Telegram",
   "main": "app.js",
   "type": "module",
   "scripts": {
