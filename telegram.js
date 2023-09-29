@@ -1,6 +1,5 @@
 import { config } from "dotenv";
-import { Telegraf } from "telegraf";
-import { message } from "telegraf/filters";
+import TelegramBot from "node-telegram-bot-api";
 import { OpenAI } from "./openai.js";
 config();
 
@@ -9,23 +8,18 @@ export class Telegram extends OpenAI {
 
   constructor() {
     super();
-    this.telegram = this.initTelegram();
+    this.telegram = new TelegramBot(process.env.TELEGRAM_TOKEN, {
+      polling: true,
+    });
     this.handleMessage();
-  }
-
-  initTelegram() {
-    const client = new Telegraf(process.env.TELEGRAM_TOKEN);
-    client.launch();
-
-    return client;
   }
 
   checkPreviousMessage() {
     if (this.previousMessage.length > 1) this.previousMessage.shift();
   }
 
-  trimMessage(m) {
-    return m.text.startsWith("/") ? m.text.slice(1).trimStart() : m.text;
+  trimMessage(text) {
+    return text.startsWith("/") ? text.slice(1).trimStart() : text;
   }
 
   handleMentionedMessage(m) {
@@ -35,27 +29,25 @@ export class Telegram extends OpenAI {
     }
   }
 
-  async getGPTCompletion(m) {
+  async getGPTCompletion(text) {
     return await this.getChatCompletion(
       this.previousMessage[0],
-      this.trimMessage(m),
+      this.trimMessage(text),
       "gpt-3.5-turbo"
     );
   }
 
-  async sendMessage(c, m) {
-    const response = await this.getGPTCompletion(m);
+  async sendMessage(m) {
+    const response = await this.getGPTCompletion(m.text);
     this.previousMessage.push(response);
-    c.reply(response);
+    this.telegram.sendMessage(m.chat.id, response);
   }
 
   handleMessage() {
-    this.telegram.on(message("text"), async (c) => {
-      const m = c.update.message;
-
-      this.checkPreviousMessage(m);
+    this.telegram.on("message", (m) => {
+      this.checkPreviousMessage();
       this.handleMentionedMessage(m);
-      this.sendMessage(c, m);
+      this.sendMessage(m);
     });
   }
 }

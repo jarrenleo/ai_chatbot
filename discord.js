@@ -13,9 +13,7 @@ export class Discord extends OpenAI {
     this.handleMessage();
   }
 
-  // Initialise the discord bot
   initDiscord() {
-    // Set bot intends
     const client = new Client({
       intents: [
         GatewayIntentBits.Guilds,
@@ -23,14 +21,11 @@ export class Discord extends OpenAI {
         GatewayIntentBits.MessageContent,
       ],
     });
-    // Login bot
     client.login(process.env.DISCORD_TOKEN);
 
     return client;
   }
 
-  // For every message read by the bot, it checks if the text content contains the correct command
-  // If it does, the command is extracted for model selection
   getCommand(m) {
     const command = m.content.trimStart().slice(0, 2);
     if (command !== "!q" && command !== "!4") return false;
@@ -38,12 +33,10 @@ export class Discord extends OpenAI {
     return command;
   }
 
-  // Update the previousMessage array to give context on the next prompt
   checkPreviousMessage() {
     if (this.previousMessage.length > 1) this.previousMessage.shift();
   }
 
-  // Update the previousMessage array if the users mentions a discord message
   async isMentionedMessage(m) {
     if (!m.mentions.repliedUser) return;
 
@@ -53,12 +46,10 @@ export class Discord extends OpenAI {
     this.previousMessage.push(messageRef.content);
   }
 
-  // Remove space characters and "!q" from the text content
   trimMessage(m) {
     return m.content.trimStart().slice(2).trimStart();
   }
 
-  // Select the appropriate model based on the command
   modelSelection(command) {
     const models = {
       "!q": "gpt-3.5-turbo",
@@ -68,14 +59,10 @@ export class Discord extends OpenAI {
     return models[command];
   }
 
-  // Interaction with ChatGPT via OpenAI API
   async getGPTCompletion(prompt, model) {
     return await this.getChatCompletion(this.previousMessage[0], prompt, model);
   }
 
-  // Check if ChatGPT response contains more than 2000 characters
-  // If it does, split the response
-  // Discord has a 2500 character limit
   checkResponse(response) {
     if (response.length <= this.characterLimit) return [response];
 
@@ -100,7 +87,6 @@ export class Discord extends OpenAI {
     return messages;
   }
 
-  // Update the previousMessage array and send ChatGPT response back to the user
   async sendMessage(m, response, messages) {
     this.previousMessage.push(response);
 
