@@ -45,6 +45,8 @@ export class Telegram extends OpenAI {
 
   handleMessage() {
     this.telegram.on("message", (m) => {
+      if (!m) return;
+
       this.checkPreviousMessage();
       this.handleMentionedMessage(m);
       this.sendMessage(m);
