@@ -1,6 +1,6 @@
 {
   "name": "chatgpt",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "ChatGPT on Discord and Telegram",
   "main": "app.js",
   "type": "module",
