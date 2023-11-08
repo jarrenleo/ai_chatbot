@@ -33,7 +33,7 @@ export class Telegram extends OpenAI {
     return await this.getChatCompletion(
       this.previousMessage[0],
       this.trimMessage(text),
-      "gpt-3.5-turbo"
+      "gpt-3.5-turbo-1106"
     );
   }
 
