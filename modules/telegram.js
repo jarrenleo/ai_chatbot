@@ -8,10 +8,14 @@ export default class Telegram extends OpenAIAPI {
 
   constructor() {
     super();
-    this.telegram = new TelegramBot(process.env.TELEGRAM_TOKEN, {
+    this.telegram = this.initTelegram();
+    this.handleMessage();
+  }
+
+  initTelegram() {
+    return new TelegramBot(process.env.TELEGRAM_TOKEN, {
       polling: true,
     });
-    this.handleMessage();
   }
 
   checkPreviousMessage() {
