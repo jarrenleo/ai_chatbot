@@ -36,8 +36,7 @@ export default class Telegram extends OpenAIAPI {
   async getGPTCompletion(text) {
     return await this.getChatCompletion(
       this.previousMessage[0],
-      this.trimMessage(text),
-      "gpt-3.5-turbo-1106"
+      this.trimMessage(text)
     );
   }
 

@@ -26,13 +26,6 @@ export default class Discord extends OpenAIAPI {
     return client;
   }
 
-  getCommand(m) {
-    const command = m.content.trimStart().slice(0, 2);
-    if (command !== "!q" && command !== "!4") return false;
-
-    return command;
-  }
-
   checkPreviousMessage() {
     if (this.previousMessage.length > 1) this.previousMessage.shift();
   }
@@ -50,17 +43,8 @@ export default class Discord extends OpenAIAPI {
     return m.content.trimStart().slice(2).trimStart();
   }
 
-  modelSelection(command) {
-    const models = {
-      "!q": "gpt-3.5-turbo-1106",
-      "!4": "gpt-4-1106-preview",
-    };
-
-    return models[command];
-  }
-
-  async getGPTCompletion(prompt, model) {
-    return await this.getChatCompletion(this.previousMessage[0], prompt, model);
+  async getGPTCompletion(prompt) {
+    return await this.getChatCompletion(this.previousMessage[0], prompt);
   }
 
   checkResponse(response) {
@@ -99,15 +83,13 @@ export default class Discord extends OpenAIAPI {
 
   handleMessage() {
     this.discord.on(Events.MessageCreate, async (m) => {
-      const command = this.getCommand(m);
-      if (!command) return;
+      if (!m.content.trimStart().startsWith("!q")) return;
 
       this.checkPreviousMessage();
       await this.isMentionedMessage(m);
 
       const prompt = this.trimMessage(m);
-      const model = this.modelSelection(command);
-      const response = await this.getGPTCompletion(prompt, model);
+      const response = await this.getGPTCompletion(prompt);
       const messages = this.checkResponse(response);
       this.sendMessage(m, response, messages);
     });

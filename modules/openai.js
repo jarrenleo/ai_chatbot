@@ -7,10 +7,10 @@ export default class OpenAIAPI {
     this.openai = new OpenAI();
   }
 
-  async getChatCompletion(previousMessage = "", currentMessage, model) {
+  async getChatCompletion(previousMessage = "", currentMessage) {
     try {
       const completion = await this.openai.chat.completions.create({
-        model: model,
+        model: "gpt-4-1106-preview",
         messages: [
           {
             role: "assistant",
