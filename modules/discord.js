@@ -4,7 +4,7 @@ import OpenAIAPI from "./openai.js";
 config();
 
 export default class Discord extends OpenAIAPI {
-  previousMessage = [];
+  previousMessage = "";
   characterLimit = 2000;
 
   constructor() {
@@ -26,25 +26,31 @@ export default class Discord extends OpenAIAPI {
     return client;
   }
 
-  checkPreviousMessage() {
-    if (this.previousMessage.length > 1) this.previousMessage.shift();
-  }
-
   async isMentionedMessage(m) {
     if (!m.mentions.repliedUser) return;
 
     const messageRef = await m.channel.messages.fetch(m.reference.messageId);
-
-    this.previousMessage.shift();
-    this.previousMessage.push(messageRef.content);
+    this.previousMessage = messageRef.content;
   }
 
-  trimMessage(m) {
-    return m.content.trimStart().slice(2).trimStart();
-  }
+  async getPrompt(m) {
+    try {
+      const trimmedMessage = m.content.trimStart().slice(2).trimStart();
 
-  async getGPTCompletion(prompt) {
-    return await this.getChatCompletion(this.previousMessage[0], prompt);
+      const attachment = m.attachments.first();
+      if (!attachment) return trimmedMessage;
+      if (attachment.contentType !== "text/plain; charset=utf-8")
+        throw Error("Attachment is not a .txt file");
+
+      const response = await fetch(attachment.url);
+      if (!response.ok) throw Error("Fail to read message from attachment");
+
+      const attachmentMessage = await response.text();
+
+      return `${trimmedMessage}\n${attachmentMessage}`;
+    } catch (error) {
+      throw Error(error.message);
+    }
   }
 
   checkResponse(response) {
@@ -72,7 +78,7 @@ export default class Discord extends OpenAIAPI {
   }
 
   async sendMessage(m, response, messages) {
-    this.previousMessage.push(response);
+    this.previousMessage = response;
 
     for (const message of messages) {
       m.reply({
@@ -81,17 +87,29 @@ export default class Discord extends OpenAIAPI {
     }
   }
 
+  async sendError(m, message) {
+    m.reply({
+      content: message,
+    });
+  }
+
   handleMessage() {
     this.discord.on(Events.MessageCreate, async (m) => {
-      if (!m.content.trimStart().startsWith("!q")) return;
+      try {
+        if (!m.content.trimStart().startsWith("!q")) return;
 
-      this.checkPreviousMessage();
-      await this.isMentionedMessage(m);
+        await this.isMentionedMessage(m);
 
-      const prompt = this.trimMessage(m);
-      const response = await this.getGPTCompletion(prompt);
-      const messages = this.checkResponse(response);
-      this.sendMessage(m, response, messages);
+        const prompt = await this.getPrompt(m);
+        const response = await this.getChatCompletion(
+          this.previousMessage,
+          prompt
+        );
+        const messages = this.checkResponse(response);
+        this.sendMessage(m, response, messages);
+      } catch (error) {
+        this.sendError(m, error.message);
+      }
     });
   }
 }
