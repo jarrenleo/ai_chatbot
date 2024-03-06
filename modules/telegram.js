@@ -1,9 +1,10 @@
 import { config } from "dotenv";
 import TelegramBot from "node-telegram-bot-api";
-import OpenAIAPI from "./openai.js";
+// import OpenAIAPI from "./openai.js";
+import AnthropicAPI from "./anthropic.js";
 config();
 
-export default class Telegram extends OpenAIAPI {
+export default class Telegram extends AnthropicAPI {
   previousMessage = "";
 
   constructor() {

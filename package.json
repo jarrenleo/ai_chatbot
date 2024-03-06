@@ -1,7 +1,7 @@
 {
-  "name": "chatgpt",
-  "version": "1.0.8",
-  "description": "ChatGPT on Discord and Telegram",
+  "name": "gpt",
+  "version": "1.0.9",
+  "description": "GPT on Discord and Telegram",
   "main": "app.js",
   "type": "module",
   "scripts": {
@@ -11,6 +11,7 @@
   "author": "jarrenleo",
   "license": "ISC",
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.16.1",
     "discord.js": "^14.14.1",
     "dotenv": "^16.3.2",
     "node-telegram-bot-api": "^0.64.0",

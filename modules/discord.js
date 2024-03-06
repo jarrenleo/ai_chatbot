@@ -1,9 +1,10 @@
 import { config } from "dotenv";
 import { Client, GatewayIntentBits, Events } from "discord.js";
-import OpenAIAPI from "./openai.js";
+// import OpenAIAPI from "./openai.js";
+import AnthropicAPI from "./anthropic.js";
 config();
 
-export default class Discord extends OpenAIAPI {
+export default class Discord extends AnthropicAPI {
   previousMessage = "";
   characterLimit = 2000;
 
@@ -40,10 +41,10 @@ export default class Discord extends OpenAIAPI {
       const attachment = m.attachments.first();
       if (!attachment) return trimmedMessage;
       if (attachment.contentType !== "text/plain; charset=utf-8")
-        throw Error("Attachment is not a .txt file");
+        throw new Error("Attachment is not a .txt file");
 
       const response = await fetch(attachment.url);
-      if (!response.ok) throw Error("Fail to read message from attachment");
+      if (!response.ok) throw new Error("Fail to read message from attachment");
 
       const attachmentMessage = await response.text();
 
@@ -96,7 +97,7 @@ export default class Discord extends OpenAIAPI {
   handleMessage() {
     this.discord.on(Events.MessageCreate, async (m) => {
       try {
-        if (!m.content.trimStart().startsWith("!q")) return;
+        if (!m.content.trimStart().startsWith("!a")) return;
 
         await this.isMentionedMessage(m);
 
