@@ -25,7 +25,6 @@ export default class AnthropicAPI {
         max_tokens: 4096,
         messages,
       });
-      console.log(completion);
 
       return completion.content[0].text;
     } catch (error) {
