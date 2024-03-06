@@ -7,18 +7,18 @@ export default class OpenAIAPI {
     this.openai = new OpenAI();
   }
 
-  async getChatCompletion(previousMessage, currentMessage) {
+  async getChatCompletion(_, previousResponse, currentPrompt) {
     try {
       const completion = await this.openai.chat.completions.create({
         model: "gpt-4-0125-preview",
         messages: [
           {
             role: "assistant",
-            content: previousMessage,
+            content: previousResponse,
           },
           {
             role: "user",
-            content: currentMessage,
+            content: currentPrompt,
           },
         ],
       });

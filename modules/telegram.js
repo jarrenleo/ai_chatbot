@@ -5,7 +5,8 @@ import AnthropicAPI from "./anthropic.js";
 config();
 
 export default class Telegram extends AnthropicAPI {
-  previousMessage = "";
+  previousPrompt = "";
+  previousResponse = "";
 
   constructor() {
     super();
@@ -27,18 +28,12 @@ export default class Telegram extends AnthropicAPI {
     if (m.reply_to_message) this.previousMessage = m.reply_to_message.text;
   }
 
-  async getGPTCompletion(text) {
-    return await this.getChatCompletion(
-      this.previousMessage,
-      this.trimMessage(text)
-    );
-  }
-
-  async sendMessage(m) {
-    const response = await this.getGPTCompletion(m.text);
-
-    this.previousMessage = response;
-    this.telegram.sendMessage(m.chat.id, response);
+  async sendMessage(m, response) {
+    try {
+      this.telegram.sendMessage(m.chat.id, response);
+    } catch (error) {
+      throw Error(error.message);
+    }
   }
 
   async sendError(m, message) {
@@ -46,12 +41,21 @@ export default class Telegram extends AnthropicAPI {
   }
 
   handleMessage() {
-    this.telegram.on("message", (m) => {
+    this.telegram.on("message", async (m) => {
       try {
         if (!m.text) return;
 
         this.handleMentionedMessage(m);
-        this.sendMessage(m);
+        const currentPrompt = this.trimMessage(m.text);
+        const response = await this.getChatCompletion(
+          this.previousPrompt,
+          this.previousResponse,
+          currentPrompt
+        );
+        this.sendMessage(m, response);
+
+        this.previousPrompt = currentPrompt;
+        this.previousResponse = response;
       } catch (error) {
         this.sendError(m, error.message);
       }

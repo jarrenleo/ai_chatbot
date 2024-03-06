@@ -9,19 +9,27 @@ export default class AnthropicAPI {
     });
   }
 
-  async getChatCompletion(previousMessage, currentMessage) {
+  async getChatCompletion(previousPrompt, previousResponse, currentPrompt) {
     try {
+      let messages = [
+        { role: "user", content: previousPrompt },
+        { role: "assistant", content: previousResponse },
+        { role: "user", content: currentPrompt },
+      ];
+
+      if (!previousPrompt && !previousResponse)
+        messages = [{ role: "user", content: currentPrompt }];
+
       const completion = await this.anthropic.messages.create({
         model: "claude-3-opus-20240229",
         max_tokens: 4096,
-        messages: [
-          { role: "user", content: currentMessage },
-          { role: "assistant", content: previousMessage },
-        ],
+        messages,
       });
+      console.log(completion);
 
       return completion.content[0].text;
-    } catch {
+    } catch (error) {
+      console.log(error.message);
       throw Error("There seems to be a problem. Please try again later.");
     }
   }

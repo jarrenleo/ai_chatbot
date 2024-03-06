@@ -5,7 +5,8 @@ import AnthropicAPI from "./anthropic.js";
 config();
 
 export default class Discord extends AnthropicAPI {
-  previousMessage = "";
+  previousPrompt = "";
+  previousResponse = "";
   characterLimit = 2000;
 
   constructor() {
@@ -78,9 +79,7 @@ export default class Discord extends AnthropicAPI {
     return messages;
   }
 
-  async sendMessage(m, response, messages) {
-    this.previousMessage = response;
-
+  async sendMessage(m, messages) {
     for (const message of messages) {
       m.reply({
         content: message,
@@ -101,13 +100,17 @@ export default class Discord extends AnthropicAPI {
 
         await this.isMentionedMessage(m);
 
-        const prompt = await this.getPrompt(m);
+        const currentPrompt = await this.getPrompt(m);
         const response = await this.getChatCompletion(
-          this.previousMessage,
-          prompt
+          this.previousPrompt,
+          this.previousResponse,
+          currentPrompt
         );
         const messages = this.checkResponse(response);
-        this.sendMessage(m, response, messages);
+        this.sendMessage(m, messages);
+
+        this.previousPrompt = currentPrompt;
+        this.previousResponse = response;
       } catch (error) {
         this.sendError(m, error.message);
       }
