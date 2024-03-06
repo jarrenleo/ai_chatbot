@@ -1,7 +1,7 @@
 {
-  "name": "gpt",
-  "version": "1.0.9",
-  "description": "GPT on Discord and Telegram",
+  "name": "aichatbot",
+  "version": "1.0.10",
+  "description": "AI chat bot on Discord and Telegram",
   "main": "app.js",
   "type": "module",
   "scripts": {

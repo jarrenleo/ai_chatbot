@@ -97,7 +97,7 @@ export default class Discord extends AnthropicAPI {
   handleMessage() {
     this.discord.on(Events.MessageCreate, async (m) => {
       try {
-        if (!m.content.trimStart().startsWith("!a")) return;
+        if (!m.content.trimStart().startsWith("!q")) return;
 
         await this.isMentionedMessage(m);
 
