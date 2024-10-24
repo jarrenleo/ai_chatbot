@@ -1,6 +1,6 @@
 {
   "name": "aichatbot",
-  "version": "1.0.13",
+  "version": "1.0.15",
   "description": "AI chat bot on Discord and Telegram",
   "main": "app.js",
   "type": "module",

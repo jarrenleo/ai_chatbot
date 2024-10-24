@@ -29,7 +29,7 @@ export default class AnthropicAPI {
       return completion.content[0].text;
     } catch (error) {
       console.log(error.message);
-      throw Error("There seems to be a problem. Please try again later.");
+      throw Error("Something went wrong. Please try again later.");
     }
   }
 }
