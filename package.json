@@ -1,6 +1,6 @@
 {
   "name": "aichatbot",
-  "version": "1.0.15",
+  "version": "1.0.16",
   "description": "AI chat bot on Discord and Telegram",
   "main": "app.js",
   "type": "module",
@@ -11,10 +11,10 @@
   "author": "jarrenleo",
   "license": "ISC",
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.30.1",
+    "@anthropic-ai/sdk": "^0.32.1",
     "discord.js": "^14.16.3",
     "dotenv": "^16.4.5",
     "node-telegram-bot-api": "^0.66.0",
-    "openai": "^4.68.4"
+    "openai": "^4.71.1"
   }
 }

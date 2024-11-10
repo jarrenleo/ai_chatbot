@@ -1,6 +1,5 @@
 import { config } from "dotenv";
 import { Client, GatewayIntentBits, Events } from "discord.js";
-// import OpenAIAPI from "./openai.js";
 import AnthropicAPI from "./anthropic.js";
 config();
 
@@ -32,7 +31,9 @@ export default class Discord extends AnthropicAPI {
     if (!m.mentions.repliedUser) return;
 
     const messageRef = await m.channel.messages.fetch(m.reference.messageId);
-    this.previousMessage = messageRef.content;
+
+    this.previousPrompt = "-";
+    this.previousResponse = messageRef.content;
   }
 
   async getPrompt(m) {
@@ -41,7 +42,7 @@ export default class Discord extends AnthropicAPI {
 
       const attachment = m.attachments.first();
       if (!attachment) return trimmedMessage;
-      if (attachment.contentType !== "text/plain; charset=utf-8")
+      if (!attachment.contentType.includes("text/plain;"))
         throw new Error("Attachment is not a .txt file");
 
       const response = await fetch(attachment.url);
