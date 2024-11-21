@@ -1,7 +1,7 @@
 import { config } from "dotenv";
-import TelegramBot from "node-telegram-bot-api";
+import { Telegraf } from "telegraf";
+import { message } from "telegraf/filters";
 import OpenAIAPI from "./openai.js";
-// import AnthropicAPI from "./anthropic.js";
 config();
 
 export default class Telegram extends OpenAIAPI {
@@ -10,41 +10,42 @@ export default class Telegram extends OpenAIAPI {
 
   constructor() {
     super();
-    this.telegram = this.initTelegram();
+    this.telegram = new Telegraf(process.env.TELEGRAM_TOKEN);
     this.handleMessage();
-  }
-
-  initTelegram() {
-    return new TelegramBot(process.env.TELEGRAM_TOKEN, {
-      polling: true,
-    });
+    this.telegram.launch();
   }
 
   trimMessage(text) {
-    return text.startsWith("/") ? text.slice(1).trimStart() : text;
+    return text.slice(1).trim();
   }
 
   handleMentionedMessage(m) {
-    if (m.reply_to_message) this.previousMessage = m.reply_to_message.text;
+    if (!m.reply_to_message) return;
+
+    this.previousPrompt = "-";
+    this.previousResponse = m.reply_to_message.text;
   }
 
-  async sendMessage(m, response) {
+  async sendMessage(ctx, response) {
     try {
-      this.telegram.sendMessage(m.chat.id, response);
+      ctx.reply(response, {
+        reply_to_message_id: ctx.message.id,
+      });
     } catch (error) {
       throw Error(error.message);
     }
   }
 
-  async sendError(m, message) {
-    this.telegram.sendMessage(m.chat.id, message);
+  async sendError(ctx, message) {
+    ctx.reply(message, {
+      reply_to_message_id: ctx.message.id,
+    });
   }
 
   handleMessage() {
-    this.telegram.on("message", async (m) => {
+    this.telegram.on(message("text"), async (ctx) => {
       try {
-        if (!m.text) return;
-
+        const m = ctx.message;
         this.handleMentionedMessage(m);
         const currentPrompt = this.trimMessage(m.text);
         const response = await this.getChatCompletion(
@@ -52,12 +53,12 @@ export default class Telegram extends OpenAIAPI {
           this.previousResponse,
           currentPrompt
         );
-        this.sendMessage(m, response);
+        this.sendMessage(ctx, response);
 
         this.previousPrompt = currentPrompt;
         this.previousResponse = response;
       } catch (error) {
-        this.sendError(m, error.message);
+        this.sendError(ctx, error.message);
       }
     });
   }

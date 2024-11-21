@@ -7,22 +7,25 @@ export default class OpenAIAPI {
     this.openai = new OpenAI();
   }
 
-  async getChatCompletion(_, previousResponse, currentPrompt) {
+  async getChatCompletion(previousPrompt, previousResponse, currentPrompt) {
     try {
       const completion = await this.openai.chat.completions.create({
-        model: "gpt-4o",
+        model: "gpt-4o-2024-11-20",
         messages: [
           {
+            role: "user",
+            content: [{ type: "text", text: previousPrompt }],
+          },
+          {
             role: "assistant",
-            content: previousResponse,
+            content: [{ type: "text", text: previousResponse }],
           },
           {
             role: "user",
-            content: currentPrompt,
+            content: [{ type: "text", text: currentPrompt }],
           },
         ],
       });
-
       return completion.choices[0].message.content;
     } catch {
       throw Error("There seems to be a problem. Please try again later.");
