@@ -53,7 +53,7 @@ export default class Telegram extends OpenAISDK {
           this.previousResponse,
           currentPrompt
         );
-        this.sendMessage(ctx, response);
+        await this.sendMessage(ctx, response);
 
         this.previousPrompt = currentPrompt;
         this.previousResponse = response;
