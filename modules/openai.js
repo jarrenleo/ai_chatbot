@@ -17,21 +17,22 @@ export default class OpenAISDK {
         messages: [
           {
             role: "user",
-            content: [{ type: "text", text: previousPrompt }],
+            content: previousPrompt,
           },
           {
             role: "assistant",
-            content: [{ type: "text", text: previousResponse }],
+            content: previousResponse,
           },
           {
             role: "user",
-            content: [{ type: "text", text: currentPrompt }],
+            content: currentPrompt,
           },
         ],
       });
       return completion.choices[0].message.content;
-    } catch {
-      throw Error("There seems to be a problem. Please try again later.");
+    } catch (error) {
+      console.log(error.message);
+      throw Error("Something went wrong. Please try again later.");
     }
   }
 }
