@@ -14,6 +14,8 @@ export default class OpenAISDK {
     try {
       const completion = await this.openai.chat.completions.create({
         model: "deepseek-chat",
+        max_completion_tokens: 8000,
+        temperature: 1.3,
         messages: [
           {
             role: "user",
