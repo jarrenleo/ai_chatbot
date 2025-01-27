@@ -1,10 +1,10 @@
 import { config } from "dotenv";
 import { Telegraf } from "telegraf";
 import { message } from "telegraf/filters";
-import OpenAIAPI from "./openai.js";
+import OpenAISDK from "./openai.js";
 config();
 
-export default class Telegram extends OpenAIAPI {
+export default class Telegram extends OpenAISDK {
   previousPrompt = "";
   previousResponse = "";
 

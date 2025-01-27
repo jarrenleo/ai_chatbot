@@ -2,15 +2,18 @@ import { config } from "dotenv";
 import OpenAI from "openai";
 config();
 
-export default class OpenAIAPI {
+export default class OpenAISDK {
   constructor() {
-    this.openai = new OpenAI();
+    this.openai = new OpenAI({
+      baseURL: "https://api.deepseek.com",
+      apiKey: process.env.DEEPSEEK_API_KEY,
+    });
   }
 
   async getChatCompletion(previousPrompt, previousResponse, currentPrompt) {
     try {
       const completion = await this.openai.chat.completions.create({
-        model: "gpt-4o-2024-11-20",
+        model: "deepseek-chat",
         messages: [
           {
             role: "user",
