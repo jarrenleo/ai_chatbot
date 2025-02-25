@@ -1,9 +1,9 @@
 import { config } from "dotenv";
 import { Client, GatewayIntentBits, Events } from "discord.js";
-import OpenAISDK from "./openai.js";
+import AnthropicAPI from "./anthropic.js";
 config();
 
-export default class Discord extends OpenAISDK {
+export default class Discord extends AnthropicAPI {
   previousPrompt = "";
   previousResponse = "";
   characterLimit = 2000;

@@ -1,10 +1,10 @@
 import { config } from "dotenv";
 import { Telegraf } from "telegraf";
 import { message } from "telegraf/filters";
-import OpenAISDK from "./openai.js";
+import AnthropicAPI from "./anthropic.js";
 config();
 
-export default class Telegram extends OpenAISDK {
+export default class Telegram extends AnthropicAPI {
   previousPrompt = "";
   previousResponse = "";
 
