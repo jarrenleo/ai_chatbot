@@ -1,5 +1,5 @@
-// import Telegram from "./modules/telegram.js";
 import Discord from "./modules/discord.js";
+// import Telegram from "./modules/telegram.js";
 
-// new Telegram();
 new Discord();
+// new Telegram();

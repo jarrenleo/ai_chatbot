@@ -1,15 +1,17 @@
 import { config } from "dotenv";
 import { Client, GatewayIntentBits, Events } from "discord.js";
 import AnthropicAPI from "./anthropic.js";
+import OpenAISDK from "./openai.js";
 config();
 
-export default class Discord extends AnthropicAPI {
+export default class Discord {
   previousPrompt = "";
   previousResponse = "";
   characterLimit = 2000;
 
   constructor() {
-    super();
+    this.anthropic = new AnthropicAPI();
+    this.openaisdk = new OpenAISDK();
     this.discord = this.initDiscord();
     this.handleMessage();
   }
@@ -97,16 +99,29 @@ export default class Discord extends AnthropicAPI {
   handleMessage() {
     this.discord.on(Events.MessageCreate, async (m) => {
       try {
-        if (!m.content.trimStart().startsWith("!q")) return;
+        const command = m.content.trimStart();
+        if (!command.startsWith("!q") && !command.startsWith("!s")) return;
 
         await this.isMentionedMessage(m);
 
         const currentPrompt = await this.getPrompt(m);
-        const response = await this.getChatCompletion(
-          this.previousPrompt,
-          this.previousResponse,
-          currentPrompt
-        );
+
+        let response;
+
+        if (command.startsWith("!q"))
+          response = await this.anthropic.getChatCompletion(
+            this.previousPrompt,
+            this.previousResponse,
+            currentPrompt
+          );
+
+        if (command.startsWith("!s"))
+          response = await this.openaisdk.getChatCompletion(
+            this.previousPrompt,
+            this.previousResponse,
+            currentPrompt
+          );
+
         const messages = this.checkResponse(response);
         this.sendMessage(m, messages);
 

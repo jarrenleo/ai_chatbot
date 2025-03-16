@@ -5,18 +5,20 @@ config();
 export default class OpenAISDK {
   constructor() {
     this.openai = new OpenAI({
-      baseURL: "https://api.deepseek.com",
-      apiKey: process.env.DEEPSEEK_API_KEY,
+      baseURL: "https://api.perplexity.ai",
+      apiKey: process.env.PERPLEXITY_API_KEY,
     });
   }
 
   async getChatCompletion(previousPrompt, previousResponse, currentPrompt) {
     try {
       const completion = await this.openai.chat.completions.create({
-        model: "deepseek-chat",
-        max_completion_tokens: 8000,
-        temperature: 1.3,
+        model: "sonar-pro",
         messages: [
+          {
+            role: "system",
+            content: "Be precise and concise.",
+          },
           {
             role: "user",
             content: previousPrompt,
