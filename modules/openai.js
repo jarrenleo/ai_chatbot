@@ -33,6 +33,7 @@ export default class OpenAISDK {
           },
         ],
       });
+      console.log(completion);
       return completion.choices[0].message.content;
     } catch (error) {
       console.log(error.message);
