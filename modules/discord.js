@@ -100,33 +100,33 @@ export default class Discord {
     this.discord.on(Events.MessageCreate, async (m) => {
       try {
         const command = m.content.trimStart();
+        if (!command.startsWith("!q") && !command.startsWith("!s")) return;
 
-        if (command.startsWith("!q")) {
-          await this.isMentionedMessage(m);
+        await this.isMentionedMessage(m);
 
-          const currentPrompt = await this.getPrompt(m);
-          const response = await this.anthropic.getChatCompletion(
+        const currentPrompt = await this.getPrompt(m);
+
+        let response;
+
+        if (command.startsWith("!q"))
+          response = await this.anthropic.getChatCompletion(
             this.previousPrompt,
             this.previousResponse,
             currentPrompt
           );
 
-          const messages = this.checkResponse(response);
-          this.sendMessage(m, messages);
-
-          this.previousPrompt = currentPrompt;
-          this.previousResponse = response;
-        }
-
-        if (command.startsWith("!s")) {
-          const currentPrompt = await this.getPrompt(m);
-          const response = await this.perplexity.getChatCompletion(
+        if (command.startsWith("!s"))
+          response = await this.perplexity.getChatCompletion(
+            this.previousPrompt,
+            this.previousResponse,
             currentPrompt
           );
 
-          const messages = this.checkResponse(response);
-          this.sendMessage(m, messages);
-        }
+        const messages = this.checkResponse(response);
+        this.sendMessage(m, messages);
+
+        this.previousPrompt = currentPrompt;
+        this.previousResponse = response;
       } catch (error) {
         this.sendError(m, error.message);
       }

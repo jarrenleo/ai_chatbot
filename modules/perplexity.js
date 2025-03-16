@@ -2,8 +2,17 @@ import { config } from "dotenv";
 config();
 
 export default class PerplexityAPI {
-  async getChatCompletion(currentPrompt) {
+  async getChatCompletion(previousPrompt, previousResponse, currentPrompt) {
     try {
+      let messages = [
+        { role: "user", content: previousPrompt },
+        { role: "assistant", content: previousResponse },
+        { role: "user", content: currentPrompt },
+      ];
+
+      if (!previousPrompt && !previousResponse)
+        messages = [{ role: "user", content: currentPrompt }];
+
       const requestBody = {
         model: "sonar-pro",
         messages: [
@@ -11,10 +20,7 @@ export default class PerplexityAPI {
             role: "system",
             content: "Be precise and concise.",
           },
-          {
-            role: "user",
-            content: currentPrompt,
-          },
+          ...messages,
         ],
         max_tokens: 8000,
         temperature: 0.2,
