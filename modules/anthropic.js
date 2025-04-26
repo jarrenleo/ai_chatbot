@@ -21,15 +21,14 @@ export default class AnthropicAPI {
         messages = [{ role: "user", content: currentPrompt }];
 
       const completion = await this.anthropic.messages.create({
-        model: "claude-3-7-sonnet-20250219",
+        model: "claude-3-7-sonnet-latest",
         max_tokens: 8192,
         messages,
       });
 
       return completion.content[0].text;
     } catch (error) {
-      console.log(error.message);
-      throw Error("Something went wrong. Please try again later.");
+      throw Error(error.message);
     }
   }
 }

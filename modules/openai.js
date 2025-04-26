@@ -5,8 +5,7 @@ config();
 export default class OpenAISDK {
   constructor() {
     this.openai = new OpenAI({
-      baseURL: "https://api.perplexity.ai",
-      apiKey: process.env.PERPLEXITY_API_KEY,
+      apiKey: process.env.OPENAI_API_KEY,
     });
   }
 
@@ -33,11 +32,22 @@ export default class OpenAISDK {
           },
         ],
       });
-      console.log(completion);
       return completion.choices[0].message.content;
     } catch (error) {
-      console.log(error.message);
-      throw Error("Something went wrong. Please try again later.");
+      throw Error(error.message);
+    }
+  }
+
+  async getImageGeneration(prompt) {
+    try {
+      const image = await this.openai.images.generate({
+        model: "gpt-image-1",
+        prompt: prompt,
+      });
+
+      return Buffer.from(image.data[0].b64_json, "base64");
+    } catch (error) {
+      throw Error(error.message);
     }
   }
 }

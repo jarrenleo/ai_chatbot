@@ -53,8 +53,7 @@ export default class PerplexityAPI {
 
       return data.choices[0].message.content;
     } catch (error) {
-      console.log(error.message);
-      throw Error("Something went wrong. Please try again later.");
+      throw Error(error.message);
     }
   }
 }

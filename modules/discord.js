@@ -2,6 +2,7 @@ import { config } from "dotenv";
 import { Client, GatewayIntentBits, Events } from "discord.js";
 import AnthropicAPI from "./anthropic.js";
 import PerplexityAPI from "./perplexity.js";
+import OpenAISDK from "./openai.js";
 config();
 
 export default class Discord {
@@ -12,6 +13,7 @@ export default class Discord {
   constructor() {
     this.anthropic = new AnthropicAPI();
     this.perplexity = new PerplexityAPI();
+    this.openai = new OpenAISDK();
     this.discord = this.initDiscord();
     this.handleMessage();
   }
@@ -100,7 +102,12 @@ export default class Discord {
     this.discord.on(Events.MessageCreate, async (m) => {
       try {
         const command = m.content.trimStart();
-        if (!command.startsWith("!q") && !command.startsWith("!s")) return;
+        if (
+          !command.startsWith("!q") &&
+          !command.startsWith("!s") &&
+          !command.startsWith("!g")
+        )
+          return;
 
         await this.isMentionedMessage(m);
 
@@ -122,11 +129,24 @@ export default class Discord {
             currentPrompt
           );
 
-        const messages = this.checkResponse(response);
-        this.sendMessage(m, messages);
+        if (command.startsWith("!g")) {
+          const imageBuffer = await this.openai.getImageGeneration(
+            currentPrompt
+          );
 
-        this.previousPrompt = currentPrompt;
-        this.previousResponse = response;
+          m.reply({
+            files: [imageBuffer],
+          });
+          return;
+        }
+
+        if (response) {
+          const messages = this.checkResponse(response);
+          this.sendMessage(m, messages);
+
+          this.previousPrompt = currentPrompt;
+          this.previousResponse = response;
+        }
       } catch (error) {
         this.sendError(m, error.message);
       }
