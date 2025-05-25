@@ -22,8 +22,9 @@ export default class AnthropicAPI {
 
       const completion = await this.anthropic.messages.create({
         model: "claude-opus-4-20250514",
-        max_tokens: 32000,
+        max_tokens: 8192,
         messages,
+        stream: false,
       });
 
       return completion.content[0].text;
