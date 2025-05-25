@@ -12,12 +12,8 @@ export default class OpenAISDK {
   async getChatCompletion(previousPrompt, previousResponse, currentPrompt) {
     try {
       const completion = await this.openai.chat.completions.create({
-        model: "sonar-pro",
+        model: "gpt-4.1",
         messages: [
-          {
-            role: "system",
-            content: "Be precise and concise.",
-          },
           {
             role: "user",
             content: previousPrompt,

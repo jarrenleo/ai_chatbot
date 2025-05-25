@@ -21,8 +21,8 @@ export default class AnthropicAPI {
         messages = [{ role: "user", content: currentPrompt }];
 
       const completion = await this.anthropic.messages.create({
-        model: "claude-3-7-sonnet-latest",
-        max_tokens: 8192,
+        model: "claude-opus-4-20250514",
+        max_tokens: 32000,
         messages,
       });
 
