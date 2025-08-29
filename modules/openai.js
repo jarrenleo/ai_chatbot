@@ -12,7 +12,7 @@ export default class OpenAISDK {
   async getChatCompletion(previousPrompt, previousResponse, currentPrompt) {
     try {
       const completion = await this.openai.chat.completions.create({
-        model: "gpt-4.1",
+        model: "gpt-5-2025-08-07",
         messages: [
           {
             role: "user",

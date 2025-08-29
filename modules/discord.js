@@ -1,6 +1,6 @@
 import { config } from "dotenv";
 import { Client, GatewayIntentBits, Events } from "discord.js";
-import AnthropicAPI from "./anthropic.js";
+// import AnthropicAPI from "./anthropic.js";
 import PerplexityAPI from "./perplexity.js";
 import OpenAISDK from "./openai.js";
 config();
@@ -11,7 +11,7 @@ export default class Discord {
   characterLimit = 2000;
 
   constructor() {
-    this.anthropic = new AnthropicAPI();
+    // this.anthropic = new AnthropicAPI();
     this.perplexity = new PerplexityAPI();
     this.openai = new OpenAISDK();
     this.discord = this.initDiscord();
@@ -116,7 +116,7 @@ export default class Discord {
         let response;
 
         if (command.startsWith("!q"))
-          response = await this.anthropic.getChatCompletion(
+          response = await this.openai.getChatCompletion(
             this.previousPrompt,
             this.previousResponse,
             currentPrompt
