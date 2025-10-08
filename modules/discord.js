@@ -1,7 +1,5 @@
 import { config } from "dotenv";
 import { Client, GatewayIntentBits, Events } from "discord.js";
-// import AnthropicAPI from "./anthropic.js";
-import PerplexityAPI from "./perplexity.js";
 import OpenAISDK from "./openai.js";
 config();
 
@@ -11,8 +9,6 @@ export default class Discord {
   characterLimit = 2000;
 
   constructor() {
-    // this.anthropic = new AnthropicAPI();
-    this.perplexity = new PerplexityAPI();
     this.openai = new OpenAISDK();
     this.discord = this.initDiscord();
     this.handleMessage();
@@ -26,8 +22,8 @@ export default class Discord {
         GatewayIntentBits.MessageContent,
       ],
     });
-    client.login(process.env.DISCORD_TOKEN);
 
+    client.login(process.env.DISCORD_TOKEN);
     return client;
   }
 
@@ -36,7 +32,7 @@ export default class Discord {
 
     const messageRef = await m.channel.messages.fetch(m.reference.messageId);
 
-    this.previousPrompt = "-";
+    this.previousPrompt = "";
     this.previousResponse = messageRef.content;
   }
 
@@ -47,7 +43,7 @@ export default class Discord {
       const attachment = m.attachments.first();
       if (!attachment) return trimmedMessage;
       if (!attachment.contentType.includes("text/plain;"))
-        throw new Error("Attachment is not a .txt file");
+        throw new Error("Attachment is not supported");
 
       const response = await fetch(attachment.url);
       if (!response.ok) throw new Error("Fail to read message from attachment");
@@ -102,51 +98,33 @@ export default class Discord {
     this.discord.on(Events.MessageCreate, async (m) => {
       try {
         const command = m.content.trimStart();
-        if (
-          !command.startsWith("!q") &&
-          !command.startsWith("!s") &&
-          !command.startsWith("!g")
-        )
-          return;
+        if (!command.startsWith("!")) return;
 
         await this.isMentionedMessage(m);
 
         const currentPrompt = await this.getPrompt(m);
 
-        let response;
+        let model;
+        if (command.startsWith("!o")) model = "openai/gpt-5";
+        if (command.startsWith("!c")) model = "anthropic/claude-sonnet-4.5";
+        if (command.startsWith("!p")) model = "perplexity/sonar-reasoning-pro";
 
-        if (command.startsWith("!q"))
-          response = await this.openai.getChatCompletion(
-            this.previousPrompt,
-            this.previousResponse,
-            currentPrompt
-          );
+        if (!model) return;
 
-        if (command.startsWith("!s"))
-          response = await this.perplexity.getChatCompletion(
-            this.previousPrompt,
-            this.previousResponse,
-            currentPrompt
-          );
+        const response = await this.openai.getResponse(
+          model,
+          this.previousPrompt,
+          this.previousResponse,
+          currentPrompt
+        );
 
-        if (command.startsWith("!g")) {
-          const imageBuffer = await this.openai.getImageGeneration(
-            currentPrompt
-          );
+        if (!response) return;
 
-          m.reply({
-            files: [imageBuffer],
-          });
-          return;
-        }
+        const messages = this.checkResponse(response);
+        this.sendMessage(m, messages);
 
-        if (response) {
-          const messages = this.checkResponse(response);
-          this.sendMessage(m, messages);
-
-          this.previousPrompt = currentPrompt;
-          this.previousResponse = response;
-        }
+        this.previousPrompt = currentPrompt;
+        this.previousResponse = response;
       } catch (error) {
         this.sendError(m, error.message);
       }
