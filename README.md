@@ -14,7 +14,7 @@ Discord bot that provides access to multiple state-of-the-art AI models through 
 
 - `!o <your question>` - Ask GPT-5
 - `!c <your question>` - Ask Claude Sonnet 4.5
-- `!p <your question>` - Ask Perplexity Sonar Pro Reasoning
+- `!p <your question>` - Ask Perplexity Sonar Reasoning Pro
 
 ### Examples
 
